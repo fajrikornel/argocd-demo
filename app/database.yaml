@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    app: dummydashboard
+    component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dummydashboard
+      component: database
+  template:
+    metadata:
+      labels:
+        app: dummydashboard
+        component: database
+    spec:
+      containers:
+      - name: database
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+          - name: MYSQL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-host
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-pass
+          - name: MYSQL_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-name
+        volumeMounts:
+          #Mount schema config on schema.sql in entrypoint folder
+          #WARNING: Due to the use of subPath, the configuration
+          #         won't be updated automatically if the ConfigMap
+          #         is updated!
+          - name: mysql-schema
+            mountPath: /docker-entrypoint-initdb.d/schema.sql
+            subPath: schema.sql
+      volumes:
+        - name: mysql-schema
+          configMap:
+            name: dummydashboard-cm
+            items:
+              - key: schema.sql
+                path: schema.sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+  labels:
+    app: dummydashboard
+    component: service
+spec:
+  selector:
+    app: dummydashboard
+    component: database
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

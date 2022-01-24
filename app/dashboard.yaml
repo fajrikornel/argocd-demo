@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-deployment
+  labels:
+    app: dummydashboard
+    component: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        app: dummydashboard
+        component: dashboard
+  template:
+    metadata:
+      labels:
+        app: dummydashboard
+        component: dashboard
+    spec:
+      containers:
+      - name: dummydashboard
+        image: fajrikornel/dummydashboard:1.0
+        ports:
+        - containerPort: 80
+        env:
+          - name: DB_CONNECTION
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-engine
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-host
+          - name: DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-port
+          - name: DB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-user
+          - name: DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-pass
+          - name: DB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: dummydashboard-cm
+                key: database-name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-svc
+  labels:
+    app: dummydashboard
+    component: service
+spec:
+  selector:
+    app: dummydashboard
+    component: dashboard
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
