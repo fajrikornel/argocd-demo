@@ -21,7 +21,3 @@ To deploy the app manually:
 | /app/dashboard.yaml | Deployment and Service objects for the Laravel dashboard app       |
 | /app/database.yaml  | Deployment and Service objects for the MySQL database              |
 | /application.yaml   | Application CRD object for Argo CD                                 |
-
-## To-do list
-
-* Deploy Argo CD and analyze its high availability feature
